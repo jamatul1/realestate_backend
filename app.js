@@ -7,10 +7,10 @@ const userRoutes = require("./routes/userRoutes");
 const propertyRoutes = require("./routes/propertyRoutes");
 const app = express();
 
-app.use("/images", express.static(path.join(__dirname, "/images")));
+// app.use("/images", express.static(path.join(__dirname, "/images")));
 
 // Middlewares
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors({ origin: "*" }));
 
 // Body Parser
 app.use(express.json());
@@ -21,9 +21,12 @@ app.use(cookieParser());
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/properties", propertyRoutes);
 
-app.use(express.static(path.join(__dirname, "/frontend/build")));
+// app.use(express.static(path.join(__dirname, "/frontend/build")));
 
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "/frontend/build", "index.html"));
+// });
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "/frontend/build", "index.html"));
+  res.send("Welcome to realestate app 😍");
 });
 module.exports = app;

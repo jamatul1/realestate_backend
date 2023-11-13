@@ -4,7 +4,7 @@
   "description": "A Real State Portal",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon backend/server.js",
+    "dev": "nodemon api/server.js",
     "heroku-postbuild": "cd backend/frontend && npm install && npm run build"
   },
   "author": "Jamatul Islam",
