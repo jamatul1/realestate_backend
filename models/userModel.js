@@ -15,7 +15,8 @@ const userSchema = new mongoose.Schema({
   },
   photo: {
     type: String,
-    default: "/images/default.png",
+    default:
+      "https://creativedogtraining-com.s3.amazonaws.com/images/made/assets/img/layout/default-staff_300_300_all_150_s_c1.jpg",
   },
   role: {
     type: String,
