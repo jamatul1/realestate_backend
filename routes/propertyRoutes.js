@@ -1,13 +1,18 @@
 const express = require("express");
 const propertyController = require("./../controllers/propertyController");
 const authController = require("./../controllers/authController");
-
+const multer = require("multer");
+const { propertyStorage } = require("../utils/cloudinaryStorage");
+const propertyImagesParser = multer({ storage: propertyStorage });
 const router = express.Router();
 
 //uploading routes
 router
   .route("/upload/:propertyId")
-  .post(propertyController.uploadMultiplePropertyImages);
+  .post(
+    propertyImagesParser.array("images", 10),
+    propertyController.uploadMultiplePropertyImages
+  );
 //removingImages
 router
   .route("/remove/:propertyId")

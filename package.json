@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.41.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
@@ -19,6 +20,7 @@
     "lodash": "^4.17.21",
     "mongoose": "^6.4.0",
     "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
     "slugify": "^1.6.5",
     "throttle-debounce": "^5.0.0",
     "validator": "^13.7.0"

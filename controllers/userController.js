@@ -3,6 +3,7 @@ const User = require("./../models/userModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const factory = require("./allFactory");
+const { getPublicId, removeImageFromCloud } = require("../utils/cloudinary");
 
 // Create a multer storage in the images/users path
 const multerStorage = multer.diskStorage({
@@ -48,8 +49,19 @@ exports.getMe = (req, res, next) => {
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   // 1) Filtered out unwanted fields names that are not allowed to be updated
+  let user = await User.findById(req.user.id);
   const filteredBody = filterObj(req.body, "email");
-  if (req.file) filteredBody.photo = "/images/users/" + req.file.filename;
+  if (req.file) {
+    if (user.photo) {
+      const photoId = getPublicId(user.photo);
+      try {
+        removeImageFromCloud("profile/" + photoId);
+      } catch (error) {
+        console.log("The photopath is invalid in userController/updateMe");
+      }
+    }
+    filteredBody.photo = req.file.path;
+  }
 
   // 2) Update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
@@ -65,8 +77,15 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
-  await User.findByIdAndUpdate(req.user.id, { active: false });
-
+  let user = await User.findByIdAndUpdate(req.user.id, { active: false });
+  if (user.photo) {
+    const photoId = getPublicId(user.photo);
+    try {
+      removeImageFromCloud("profile/" + photoId);
+    } catch (error) {
+      console.log("The photopath is invalid in userController/updateMe");
+    }
+  }
   res.status(204).json({
     status: "success",
     data: null,

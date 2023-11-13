@@ -5,6 +5,11 @@ const Property = require(".././models/propertyModel");
 const catchAsync = require("./../utils/catchAsync");
 const factory = require("./allFactory");
 const AppError = require("./../utils/appError");
+const {
+  getPublicIdList,
+  getPublicId,
+  removeImageFromCloud,
+} = require("../utils/cloudinary");
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -30,50 +35,46 @@ const multi_upload = multer({
 }).array("images", 10);
 
 exports.uploadMultiplePropertyImages = async (req, res) => {
-  multi_upload(req, res, async function (err) {
-    //multer error
-    if (err instanceof multer.MulterError) {
-      console.log(err);
-      res
-        .status(500)
-        .send({
-          error: { msg: `multer uploading error: ${err.message}` },
-        })
-        .end();
-      return;
-    } else if (err) {
-      //unknown error
-      if (err.name == "ExtensionError") {
-        res
-          .status(413)
-          .send({ error: { msg: `${err.message}` } })
-          .end();
-      } else {
-        res
-          .status(500)
-          .send({ error: { msg: `unknown uploading error: ${err.message}` } })
-          .end();
-      }
-      return;
-    }
-    let imagesPath = [];
-    for (let file of req.files) {
-      imagesPath.push("/images/properties/" + file.filename);
-    }
-    try {
-      let property = await Property.findById(req.params.propertyId);
-      let prevImgs = property.images;
-      console.log("previous imgs", prevImgs);
-      console.log("uploaded imgs", imagesPath);
-      //updating the images of the property
-      imagesPath = [...imagesPath, ...prevImgs];
-      console.log("all images", imagesPath);
-      await Property.findByIdAndUpdate(req.params.propertyId, {
-        images: imagesPath,
-      });
-    } catch (error) {}
-    res.status(200).send("file uploaded");
-  });
+  // multi_upload(req, res, async function (err) {
+  //   //multer error
+  //   if (err instanceof multer.MulterError) {
+  //     console.log(err);
+  //     res
+  //       .status(500)
+  //       .send({
+  //         error: { msg: `multer uploading error: ${err.message}` },
+  //       })
+  //       .end();
+  //     return;
+  //   } else if (err) {
+  //     //unknown error
+  //     if (err.name == "ExtensionError") {
+  //       res
+  //         .status(413)
+  //         .send({ error: { msg: `${err.message}` } })
+  //         .end();
+  //     } else {
+  //       res
+  //         .status(500)
+  //         .send({ error: { msg: `unknown uploading error: ${err.message}` } })
+  //         .end();
+  //     }
+  //     return;
+  //   }
+  let imagesPath = [];
+  for (let file of req.files) {
+    imagesPath.push(file.path);
+  }
+  try {
+    let property = await Property.findById(req.params.propertyId);
+    let prevImgs = property.images;
+    //updating the images of the property
+    imagesPath = [...imagesPath, ...prevImgs];
+    await Property.findByIdAndUpdate(req.params.propertyId, {
+      images: imagesPath,
+    });
+  } catch (error) {}
+  res.status(200).send("file uploaded");
 };
 
 exports.removePropertyImages = async (req, res) => {
@@ -83,9 +84,12 @@ exports.removePropertyImages = async (req, res) => {
     let property = await Property.findById(req.params.propertyId);
     let filteredImgs = property.images;
     for (let img of imgs) {
-      fs.unlinkSync(path.join(process.cwd(), "backend", img));
+      // fs.unlinkSync(path.join(process.cwd(), "backend", img));
+      let public_id = getPublicId(img);
+      removeImageFromCloud(public_id);
       filteredImgs = filteredImgs.filter((i) => i !== img);
     }
+
     await Property.findByIdAndUpdate(req.params.propertyId, {
       images: filteredImgs,
     });
@@ -114,7 +118,7 @@ exports.deleteProperty = factory.deleteOne(Property);
 exports.getPropertiesWithin = catchAsync(async (req, res, next) => {
   const { distance, latlng, unit } = req.params;
   const [lat, lng] = latlng.split(",");
-  let propertiesTest =await Property.find()
+  let propertiesTest = await Property.find();
   const radius = unit === "mi" ? distance / 3963.2 : distance / 6378.1;
 
   if (!lat || !lng) {

@@ -1,8 +1,10 @@
 const express = require("express");
 const userController = require("./../controllers/userController");
 const authController = require("./../controllers/authController");
-
+const multer = require("multer");
+const { profileStorage } = require("../utils/cloudinaryStorage");
 const router = express.Router();
+const profileImageParser = multer({ storage: profileStorage });
 
 router.post("/signup", authController.signup);
 router.post("/signin", authController.signin);
@@ -13,7 +15,7 @@ router.use(authController.protect);
 router.get("/me", userController.getMe, userController.getUser);
 router.patch(
   "/updateMe",
-  userController.uploadUserPhoto,
+  profileImageParser.single("photo"),
   userController.updateMe
 );
 router.delete("/deleteMe", userController.deleteMe);
