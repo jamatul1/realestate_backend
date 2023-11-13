@@ -1,24 +1,32 @@
-const mongoose = require("mongoose");
-const app = require("../app");
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const path = require("path");
 
-// ** Dotenv Configuration
-require("dotenv").config();
+const userRoutes = require("./routes/userRoutes");
+const propertyRoutes = require("./routes/propertyRoutes");
+const app = express();
 
-//***---------------- Connecting to the Database ----------------------***
-const dbUrl = process.env.MONGO_URL;
-console.log(dbUrl);
-mongoose.connect(dbUrl, function (error) {
-  if (!error) {
-    console.log("Database is connected successfully.");
-  } else {
-    console.log("Database connection failed with error : ", error);
-  }
+// app.use("/images", express.static(path.join(__dirname, "/images")));
+
+// Middlewares
+app.use(cors({ origin: "*" }));
+
+// Body Parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Routes
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/properties", propertyRoutes);
+
+// app.use(express.static(path.join(__dirname, "/frontend/build")));
+
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "/frontend/build", "index.html"));
+// });
+app.get("*", (req, res) => {
+  res.send("Welcome to realestate app 😍");
 });
-
-// ***--------------- Server is listening here -----------------------***
-port = process.env.PORT || 8000;
-app.listen(port, (error) => {
-  if (!error) {
-    console.log("Server is listening at Port : ", port);
-  }
-});
+module.exports = app;
