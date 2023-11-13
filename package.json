@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon api/server.js",
-    "heroku-postbuild": "cd backend/frontend && npm install && npm run build"
+    "heroku-postbuild": "cd backend/frontend && npm install && npm run build",
+    "vercel-build": "echo hello"
   },
   "author": "Jamatul Islam",
   "license": "ISC",
