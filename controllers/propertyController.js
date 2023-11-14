@@ -132,7 +132,9 @@ exports.getPropertiesWithin = catchAsync(async (req, res, next) => {
 
   const properties = await Property.find({
     location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
-  });
+  }).select(
+    "fields=_id,images,forSale,forRent,name,location.address,location.description,beds,area,price,-owner"
+  );
 
   res.status(200).json({
     status: "success",
